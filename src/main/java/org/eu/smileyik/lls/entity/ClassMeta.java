@@ -19,6 +19,7 @@ public class ClassMeta implements ModifierEntity, DescriptionEntity, TypeMeta {
     private String description;
     private List<DescriptionTag> descriptionTags;
     private boolean deprecated;
+    private boolean anInterface;
 
     private List<FieldMeta> fields;
     private List<MethodMeta> methods;

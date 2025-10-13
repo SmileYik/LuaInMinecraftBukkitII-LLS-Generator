@@ -83,7 +83,6 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         List<String> interfaces = toFullClassList(n.getImplementedTypes());
         List<String> modifiers = toModifierList(n.getModifiers());
         List<TypeParameterMeta> typeParameters = toTypeParameterList(n.getTypeParameters());
-
         ClassMeta classMeta = new ClassMeta();
         classMeta.setClassName(className);
         classMeta.setExtents(extents);
@@ -92,6 +91,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         classMeta.setTypeParameters(typeParameters);
         classMeta.setPackageName(currentPackage);
         classMeta.setDeprecated(n.getAnnotationByClass(Deprecated.class).isPresent());
+        classMeta.setAnInterface(n.isInterface());
         classMap.put(className, classMeta);
         imports.put(n.getName().getIdentifier(), className);
 
@@ -272,6 +272,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
             Param param = new Param();
             param.setName(name);
             param.setType(getFullClassName(classMeta, methodMeta, typeAsString));
+            param.setVarArgs(parameter.isVarArgs());
             result.add(param);
         }
         return result;

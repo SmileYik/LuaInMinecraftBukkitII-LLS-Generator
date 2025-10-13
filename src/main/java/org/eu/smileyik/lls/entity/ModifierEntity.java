@@ -8,7 +8,14 @@ public interface ModifierEntity {
 
     List<String> getModifiers();
 
+    default boolean isAnInterface() {
+        return false;
+    }
+
     default String getScope() {
+        if (isAnInterface()) {
+            return "public";
+        }
         List<String> modifiers = getModifiers();
         String scope = "private";
         if (modifiers != null) {

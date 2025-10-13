@@ -56,7 +56,11 @@ public class LuaStubGenerator {
         List<FieldMeta> fields = classMeta.getFields();
         if (fields != null) {
             fields.forEach(fieldMeta -> {
-                lines.add("---@field " + fieldMeta.getScope() + " " + fieldMeta.getName() + " " + getType(fieldMeta.getType()) + " " + (String.format("%s", fieldMeta.isStatic() ? "[STATIC] " : "")) + fieldMeta.getOneLineDescription());
+                String scope = fieldMeta.getScope();
+                if (classMeta.isAnInterface() && fieldMeta.isStatic()) {
+                    scope = "public";
+                }
+                lines.add("---@field " + scope + " " + fieldMeta.getName() + " " + getType(fieldMeta.getType()) + " " + (String.format("%s", fieldMeta.isStatic() ? "[STATIC] " : "")) + fieldMeta.getOneLineDescription());
             });
         }
         if (classMeta.isDeprecated()) {
@@ -64,7 +68,7 @@ public class LuaStubGenerator {
         }
         lines.add("local " + simpleClassName + " = {}");
 
-        lines.addAll(generateMethods(simpleClassName, classMeta.getMethods()));
+        lines.addAll(generateMethods(classMeta, classMeta.getMethods()));
         lines.add("");
         lines.add("return " + simpleClassName);
         return String.join("\n", lines);
@@ -77,15 +81,15 @@ public class LuaStubGenerator {
         return String.join("\n", lines);
     }
 
-    protected static List<String> generateMethods(String classSimpleName, List<MethodMeta> methods) {
+    protected static List<String> generateMethods(ClassMeta classMeta, List<MethodMeta> methods) {
         if (methods == null || methods.isEmpty()) {
             return Collections.emptyList();
         }
         List<String> lines = new ArrayList<>();
         methods.forEach(methodMeta -> {
             lines.add("");
-            lines.add("---@" + methodMeta.getScope());
             if (methodMeta.hasDescription()) lines.add("---" + methodMeta.getOneLineDescription());
+            lines.add("---@" + (classMeta.isAnInterface() ? "public" : methodMeta.getScope()));
             List<DescriptionTag> paramsDescription = methodMeta.getDescriptionTags(DescriptionEntity.Type.PARAM);
             List<Param> params = methodMeta.getParams();
             List<String> paramNames = new ArrayList<>();
@@ -109,7 +113,7 @@ public class LuaStubGenerator {
             if (methodMeta.isDeprecated()) {
                 lines.add("---@deprecated");
             }
-            lines.add("function " + classSimpleName + ":" + methodMeta.getName() + "(" + String.join(", ", paramNames) + ") end");
+            lines.add("function " + classMeta.getSimpleName() + ":" + methodMeta.getName() + "(" + String.join(", ", paramNames) + ") end");
         });
         return lines;
     }

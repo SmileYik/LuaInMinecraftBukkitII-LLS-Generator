@@ -8,8 +8,13 @@ public class Param {
     private String type;
     private String name;
     private String description;
+    private boolean varArgs;
 
     public String getName() {
         return LuaConstants.getName(name);
+    }
+
+    public String getType() {
+        return varArgs ? type + "[]" : type;
     }
 }
