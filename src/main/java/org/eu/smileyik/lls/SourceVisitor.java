@@ -116,15 +116,15 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
 
         n.findAncestor(TypeDeclaration.class).ifPresent(ancestor -> {
             String className = (String) ancestor.getFullyQualifiedName().orElse(ancestor.getNameAsString());
-            TypeMeta typeMeta = classMap.get(className);
+            ClassMeta typeMeta = classMap.get(className);
             if (typeMeta == null) return;
 
             MethodMeta methodMeta = new MethodMeta();
             methodMeta.setModifiers(toModifierList(n.getModifiers()));
             methodMeta.setTypeParameters(toTypeParameterList(n.getTypeParameters()));
-            methodMeta.setReturnType(getFullClassName(n.getTypeAsString()));
+            methodMeta.setReturnType(getFullClassName(typeMeta, methodMeta, n.getTypeAsString()));
             methodMeta.setName(n.getNameAsString());
-            methodMeta.setParams(toParamList(n.getParameters()));
+            methodMeta.setParams(toParamList(typeMeta, methodMeta, n.getParameters()));
             n.getAnnotationByClass(Override.class).ifPresent(override -> {
                 methodMeta.setOverride(true);
             });
@@ -153,7 +153,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
                 FieldMeta fieldMeta = new FieldMeta();
                 fieldMeta.setModifiers(toModifierList(n.getModifiers()));
                 fieldMeta.setName(variable.getNameAsString());
-                fieldMeta.setType(getFullClassName(variable.getTypeAsString()));
+                fieldMeta.setType(getFullClassName(classMeta, variable.getTypeAsString()));
                 fieldMeta.setDeprecated(n.getAnnotationByClass(Deprecated.class).isPresent());
                 fields.add(fieldMeta);
                 classMeta.addFieldMeta(fieldMeta);
@@ -168,6 +168,38 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
                 }
             });
         });
+    }
+
+    protected String getFullClassName(ClassMeta classMeta, String type) {
+        List<TypeParameterMeta> typeParameters = classMeta.getTypeParameters();
+        if (typeParameters != null) {
+            for (TypeParameterMeta typeParameterMeta : typeParameters) {
+                if (Objects.equals(typeParameterMeta.getType(), type)) {
+                    return "java.lang.Object";
+                }
+            }
+        }
+        return getFullClassName(type);
+    }
+
+    protected String getFullClassName(ClassMeta classMeta, MethodMeta methodMeta, String type) {
+        List<TypeParameterMeta> typeParameters = methodMeta.getTypeParameters();
+        if (typeParameters != null) {
+            for (TypeParameterMeta typeParameterMeta : typeParameters) {
+                if (Objects.equals(typeParameterMeta.getType(), type)) {
+                    return "java.lang.Object";
+                }
+            }
+        }
+        typeParameters = classMeta.getTypeParameters();
+        if (typeParameters != null) {
+            for (TypeParameterMeta typeParameterMeta : typeParameters) {
+                if (Objects.equals(typeParameterMeta.getType(), type)) {
+                    return "java.lang.Object";
+                }
+            }
+        }
+        return getFullClassName(type);
     }
 
     protected String getFullClassName(String name) {
@@ -232,14 +264,14 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         return result;
     }
 
-    protected List<Param> toParamList(NodeList<Parameter> list) {
+    protected List<Param> toParamList(ClassMeta classMeta, MethodMeta methodMeta, NodeList<Parameter> list) {
         List<Param> result = new ArrayList<>();
         for (Parameter parameter : list) {
             String name = parameter.getNameAsString();
             String typeAsString = parameter.getTypeAsString();
             Param param = new Param();
             param.setName(name);
-            param.setType(getFullClassName(typeAsString));
+            param.setType(getFullClassName(classMeta, methodMeta, typeAsString));
             result.add(param);
         }
         return result;
