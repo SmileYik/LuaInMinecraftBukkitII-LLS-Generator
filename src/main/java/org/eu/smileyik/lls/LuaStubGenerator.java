@@ -67,6 +67,9 @@ public class LuaStubGenerator {
 //                }
 //            });
 //        }
+        if (classMeta.isDeprecated()) {
+            lines.add("---@deprecated");
+        }
         lines.add("local " + classMeta.getSimpleName() + " = {}");
 
         if (methods != null) {
@@ -87,12 +90,15 @@ public class LuaStubGenerator {
                     if (descriptionTag == null) continue;
                     String desc = descriptionTag.getContent();
                     if (desc == null) continue;
-                    desc = desc.replace("\n", "").trim();
+                    desc = desc.replaceAll("[\n\r]", "").trim();
                     if (desc.isEmpty()) continue;
                     lines.add("---@param " + param.getName() + " " + getType(param.getType()) + " " + desc);
                 }
                 if (methodMeta.hasReturn()) {
                     lines.add("---@return " + getType(methodMeta.getReturnType()) + " " + methodMeta.getReturnDescription());
+                }
+                if (methodMeta.isDeprecated()) {
+                    lines.add("---@deprecated");
                 }
                 lines.add("function " + classMeta.getSimpleName() + ":" + methodMeta.getName() + "(" + String.join(", ", paramNames) + ") end");
             });

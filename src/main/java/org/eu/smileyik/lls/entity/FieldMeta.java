@@ -10,6 +10,7 @@ public class FieldMeta implements ModifierEntity, DescriptionEntity {
     private String name;
     private String type;
     private List<String> modifiers;
+    private boolean deprecated;
     private String description;
     private List<DescriptionTag> descriptionTags;
     public synchronized void addDescription(DescriptionTag tag) {

@@ -14,6 +14,7 @@ public class MethodMeta implements ModifierEntity, DescriptionEntity {
     private List<Param> params;
     private String description;
     private boolean override;
+    private boolean deprecated;
     private List<DescriptionTag> descriptionTags;
 
     public synchronized void addDescription(DescriptionTag tag) {

@@ -51,6 +51,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         classMeta.setModifiers(modifiers);
         classMeta.setTypeParameters(typeParameters);
         classMeta.setPackageName(currentPackage);
+        classMeta.setDeprecated(n.getAnnotationByClass(Deprecated.class).isPresent());
         map.put(className, classMeta);
         imports.put(n.getName().getIdentifier(), className);
 
@@ -87,6 +88,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
             n.getAnnotationByClass(Override.class).ifPresent(override -> {
                 methodMeta.setOverride(true);
             });
+            methodMeta.setDeprecated(n.getAnnotationByClass(Deprecated.class).isPresent());
             n.getJavadoc().ifPresent(javadoc -> {
                 methodMeta.setDescription(javadoc.getDescription().toText());
                 for (JavadocBlockTag blockTag : javadoc.getBlockTags()) {
@@ -112,6 +114,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
                 fieldMeta.setModifiers(toModifierList(n.getModifiers()));
                 fieldMeta.setName(variable.getNameAsString());
                 fieldMeta.setType(getFullClassName(variable.getTypeAsString()));
+                fieldMeta.setDeprecated(n.getAnnotationByClass(Deprecated.class).isPresent());
                 fields.add(fieldMeta);
                 classMeta.addFieldMeta(fieldMeta);
             }
@@ -128,11 +131,25 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
     }
 
     protected String getFullClassName(String name) {
+        if (JavaConstants.isBaseType(name)) {
+            return name;
+        }
         if (name.contains("<")) {
             name = name.substring(0, name.indexOf("<"));
         }
         if (!name.contains(".")) {
             name = imports.getOrDefault(name, name);
+        }
+        if (!name.contains(".")) {
+            String clazzName = "java.lang." + name;
+            boolean exists = true;
+            try {
+                Class.forName(clazzName);
+            } catch (ClassNotFoundException ignored) {
+                exists = false;
+            } catch (Exception ignored) {
+            }
+            return exists ? clazzName : (currentPackage + "." + name);
         }
         return name;
     }
@@ -192,6 +209,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         map.values().forEach(classMeta -> {
             classMeta.analyzeClassName(name -> {
                 if (name.contains(".")) return name;
+                if (JavaConstants.isBaseType(name)) return name;
                 String newName = getFullClassName(name);
                 if (!Objects.equals(newName, name)) return newName;
                 String clazzName = "java.lang." + name;

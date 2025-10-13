@@ -29,7 +29,7 @@ public interface DescriptionEntity {
     }
 
     public default String getOneLineDescription() {
-        return getDescription() == null ? "" : getDescription().replace("\n", "");
+        return getDescription() == null ? "" : getDescription().replaceAll("[\n\r]", "");
     }
 
     public default List<DescriptionTag> getDescriptionTags(Type type) {
@@ -49,7 +49,7 @@ public interface DescriptionEntity {
         for  (DescriptionTag tag : descriptionTags) {
             String content = tag.getContent();
             if (content != null) {
-                return content.replace("\n", "");
+                return content.replaceAll("[\n\r]", "");
             }
         }
         return "";

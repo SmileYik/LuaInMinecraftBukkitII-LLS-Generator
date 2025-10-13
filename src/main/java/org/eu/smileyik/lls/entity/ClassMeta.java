@@ -1,6 +1,7 @@
 package org.eu.smileyik.lls.entity;
 
 import lombok.Data;
+import org.eu.smileyik.lls.JavaConstants;
 
 import java.util.*;
 import java.util.function.Function;
@@ -17,6 +18,7 @@ public class ClassMeta implements ModifierEntity, DescriptionEntity {
     private List<TypeParameterMeta> typeParameters;
     private String description;
     private List<DescriptionTag> descriptionTags;
+    private boolean deprecated;
 
     private List<FieldMeta> fields;
     private List<MethodMeta> methods;
@@ -64,25 +66,25 @@ public class ClassMeta implements ModifierEntity, DescriptionEntity {
         }
 
         for (String str : extents) {
-            if (!str.contains(".")) {
+            if (!str.contains(".") && !JavaConstants.isBaseType(str)) {
                 finishedAnalyzeClass = false;
                 return;
             }
         }
         for (String str : interfaces) {
-            if (!str.contains(".")) {
+            if (!str.contains(".") && !JavaConstants.isBaseType(str)) {
                 finishedAnalyzeClass = false;
                 return;
             }
         }
         if (methods != null) {
             for (MethodMeta methodMeta : methods) {
-                if (!methodMeta.getReturnType().contains(".")) {
+                if (!methodMeta.getReturnType().contains(".") && !JavaConstants.isBaseType(methodMeta.getReturnType())) {
                     finishedAnalyzeClass = false;
                     return;
                 }
                 for (Param param : methodMeta.getParams()) {
-                    if (!param.getType().contains(".")) {
+                    if (!param.getType().contains(".") && !JavaConstants.isBaseType(param.getType())) {
                         finishedAnalyzeClass = false;
                         return;
                     }
