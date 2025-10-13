@@ -19,7 +19,8 @@ import java.util.*;
 public class SourceVisitor extends VoidVisitorAdapter<Void> {
     private String currentPackage;
     @ToString.Include
-    private final Map<String, ClassMeta> map = new HashMap<>();
+    private final Map<String, ClassMeta> classMap = new HashMap<>();
+//    private final Map<String, EnumMeta> enumMap = new HashMap<>();
     private final Map<String, String> imports = new HashMap<>();
 
     @Override
@@ -34,6 +35,45 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         String simpleName = n.getName().getIdentifier();
         String name = n.getNameAsString();
         imports.put(simpleName, name);
+    }
+
+    @Override
+    public void visit(EnumDeclaration n, Void arg) {
+        ClassMeta meta = new ClassMeta();
+        meta.setClassName(n.getFullyQualifiedName().orElse(n.getNameAsString()));
+        meta.setPackageName(currentPackage);
+        meta.setInterfaces(toFullClassList(n.getImplementedTypes()));
+        meta.setModifiers(toModifierList(n.getModifiers()));
+        meta.setDeprecated(n.getAnnotationByClass(Deprecated.class).isPresent());
+        for (EnumConstantDeclaration entry : n.getEntries()) {
+            FieldMeta fieldMeta = new FieldMeta();
+            fieldMeta.setType(meta.getClassName());
+            fieldMeta.setModifiers(Arrays.asList("public", "static", "final"));
+            fieldMeta.setName(entry.getNameAsString());
+            fieldMeta.setDeprecated(entry.isAnnotationPresent(Deprecated.class));
+            entry.getJavadoc().ifPresent(javadoc -> {
+                fieldMeta.setDescription(javadoc.getDescription().toText());
+                for (JavadocBlockTag blockTag : javadoc.getBlockTags()) {
+                    fieldMeta.addDescription(javadocBlockTag2Tag(blockTag));
+                }
+            });
+            meta.addFieldMeta(fieldMeta);
+        }
+        n.getJavadoc().ifPresent(javadoc -> {
+            meta.setDescription(javadoc.getDescription().toText());
+            for (JavadocBlockTag blockTag : javadoc.getBlockTags()) {
+                meta.addDescription(javadocBlockTag2Tag(blockTag));
+            }
+        });
+        imports.put(n.getName().getIdentifier(), meta.getClassName());
+        classMap.put(meta.getClassName(), meta);
+        super.visit(n, arg);
+    }
+
+    @Override
+    public void visit(RecordDeclaration n, Void arg) {
+
+        super.visit(n, arg);
     }
 
     @Override
@@ -52,7 +92,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         classMeta.setTypeParameters(typeParameters);
         classMeta.setPackageName(currentPackage);
         classMeta.setDeprecated(n.getAnnotationByClass(Deprecated.class).isPresent());
-        map.put(className, classMeta);
+        classMap.put(className, classMeta);
         imports.put(n.getName().getIdentifier(), className);
 
         n.getJavadoc().ifPresent(javadoc -> {
@@ -63,7 +103,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         });
 
         // fill names
-        for (ClassMeta meta : map.values()) {
+        for (ClassMeta meta : classMap.values()) {
             meta.analyzeClassName(this::getFullClassName);
         }
 
@@ -74,10 +114,10 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
     public void visit(MethodDeclaration n, Void arg) {
         super.visit(n, arg);
 
-        n.findAncestor(ClassOrInterfaceDeclaration.class).ifPresent(ancestor -> {
-            String className = ancestor.getFullyQualifiedName().orElse(ancestor.getNameAsString());
-            ClassMeta classMeta = map.get(className);
-            if (classMeta == null) return;
+        n.findAncestor(TypeDeclaration.class).ifPresent(ancestor -> {
+            String className = (String) ancestor.getFullyQualifiedName().orElse(ancestor.getNameAsString());
+            TypeMeta typeMeta = classMap.get(className);
+            if (typeMeta == null) return;
 
             MethodMeta methodMeta = new MethodMeta();
             methodMeta.setModifiers(toModifierList(n.getModifiers()));
@@ -96,7 +136,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
                 }
             });
 
-            classMeta.addMethodMeta(methodMeta);
+            typeMeta.addMethodMeta(methodMeta);
         });
     }
 
@@ -105,7 +145,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         super.visit(n, arg);
         n.findAncestor(ClassOrInterfaceDeclaration.class).ifPresent(ancestor -> {
             String className = ancestor.getFullyQualifiedName().orElse(ancestor.getNameAsString());
-            ClassMeta classMeta = map.get(className);
+            ClassMeta classMeta = classMap.get(className);
             if (classMeta == null) return;
 
             List<FieldMeta> fields = new ArrayList<>();
@@ -206,7 +246,7 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
     }
 
     public Collection<ClassMeta> getClassMetas() {
-        map.values().forEach(classMeta -> {
+        classMap.values().forEach(classMeta -> {
             classMeta.analyzeClassName(name -> {
                 if (name.contains(".")) return name;
                 if (JavaConstants.isBaseType(name)) return name;
@@ -223,6 +263,10 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
                 return exists ? clazzName : (currentPackage + "." + name);
             });
         });
-        return map.values();
+        return classMap.values();
     }
+
+//    public Collection<EnumMeta> getEnumMetas() {
+//        return enumMap.values();
+//    }
 }

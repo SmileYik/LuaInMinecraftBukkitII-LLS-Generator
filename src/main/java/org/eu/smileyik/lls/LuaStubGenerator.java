@@ -43,9 +43,9 @@ public class LuaStubGenerator {
         TYPES = Collections.unmodifiableMap(map);
     }
 
-
     public static String generate(ClassMeta classMeta) {
         List<String> lines = new ArrayList<>();
+        String simpleClassName = classMeta.getSimpleName();
 
         lines.add("---@meta");
         if (classMeta.hasDescription()) {
@@ -59,53 +59,59 @@ public class LuaStubGenerator {
                 lines.add("---@field " + fieldMeta.getScope() + " " + fieldMeta.getName() + " " + getType(fieldMeta.getType()) + " " + (String.format("%s", fieldMeta.isStatic() ? "[STATIC] " : "")) + fieldMeta.getOneLineDescription());
             });
         }
-        List<MethodMeta> methods = classMeta.getMethods();
-//        if (methods != null) {
-//            methods.forEach(methodMeta -> {
-//                if (methodMeta.isOverride()) {
-//                    lines.add(overrideMethodLine(methodMeta));
-//                }
-//            });
-//        }
         if (classMeta.isDeprecated()) {
             lines.add("---@deprecated");
         }
-        lines.add("local " + classMeta.getSimpleName() + " = {}");
+        lines.add("local " + simpleClassName + " = {}");
 
-        if (methods != null) {
-            methods.forEach(methodMeta -> {
-                lines.add("");
-                lines.add("---@" + methodMeta.getScope());
-                if (methodMeta.hasDescription()) lines.add("---" + methodMeta.getOneLineDescription());
-                List<DescriptionTag> paramsDescription = methodMeta.getDescriptionTags(DescriptionEntity.Type.PARAM);
-                List<Param> params = methodMeta.getParams();
-                List<String> paramNames = new ArrayList<>();
-                Map<String, DescriptionTag> paramDes = new HashMap<>();
-                for (DescriptionTag param : paramsDescription) {
-                    paramDes.put(param.getName(), param);
-                }
-                for (Param param : params) {
-                    paramNames.add(param.getName());
-                    DescriptionTag descriptionTag = paramDes.get(param.getName());
-                    if (descriptionTag == null) continue;
-                    String desc = descriptionTag.getContent();
-                    if (desc == null) continue;
-                    desc = desc.replaceAll("[\n\r]", "").trim();
-                    if (desc.isEmpty()) continue;
-                    lines.add("---@param " + param.getName() + " " + getType(param.getType()) + " " + desc);
-                }
-                if (methodMeta.hasReturn()) {
-                    lines.add("---@return " + getType(methodMeta.getReturnType()) + " " + methodMeta.getReturnDescription());
-                }
-                if (methodMeta.isDeprecated()) {
-                    lines.add("---@deprecated");
-                }
-                lines.add("function " + classMeta.getSimpleName() + ":" + methodMeta.getName() + "(" + String.join(", ", paramNames) + ") end");
-            });
-        }
+        lines.addAll(generateMethods(simpleClassName, classMeta.getMethods()));
         lines.add("");
-        lines.add("return " + classMeta.getSimpleName());
+        lines.add("return " + simpleClassName);
         return String.join("\n", lines);
+    }
+
+    public static String generate(EnumMeta enumMeta) {
+        List<String> lines = new ArrayList<>();
+        String simpleClassName = enumMeta.getSimpleName();
+
+        return String.join("\n", lines);
+    }
+
+    protected static List<String> generateMethods(String classSimpleName, List<MethodMeta> methods) {
+        if (methods == null || methods.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> lines = new ArrayList<>();
+        methods.forEach(methodMeta -> {
+            lines.add("");
+            lines.add("---@" + methodMeta.getScope());
+            if (methodMeta.hasDescription()) lines.add("---" + methodMeta.getOneLineDescription());
+            List<DescriptionTag> paramsDescription = methodMeta.getDescriptionTags(DescriptionEntity.Type.PARAM);
+            List<Param> params = methodMeta.getParams();
+            List<String> paramNames = new ArrayList<>();
+            Map<String, DescriptionTag> paramDes = new HashMap<>();
+            for (DescriptionTag param : paramsDescription) {
+                paramDes.put(param.getName(), param);
+            }
+            for (Param param : params) {
+                paramNames.add(param.getName());
+                DescriptionTag descriptionTag = paramDes.get(param.getName());
+                if (descriptionTag == null) continue;
+                String desc = descriptionTag.getContent();
+                if (desc == null) continue;
+                desc = desc.replaceAll("[\n\r]", "").trim();
+                if (desc.isEmpty()) continue;
+                lines.add("---@param " + param.getName() + " " + getType(param.getType()) + " " + desc);
+            }
+            if (methodMeta.hasReturn()) {
+                lines.add("---@return " + getType(methodMeta.getReturnType()) + " " + methodMeta.getReturnDescription());
+            }
+            if (methodMeta.isDeprecated()) {
+                lines.add("---@deprecated");
+            }
+            lines.add("function " + classSimpleName + ":" + methodMeta.getName() + "(" + String.join(", ", paramNames) + ") end");
+        });
+        return lines;
     }
 
     protected static String getType(String type) {

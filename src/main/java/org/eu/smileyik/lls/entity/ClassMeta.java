@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.function.Function;
 
 @Data
-public class ClassMeta implements ModifierEntity, DescriptionEntity {
+public class ClassMeta implements ModifierEntity, DescriptionEntity, TypeMeta {
     private boolean finishedAnalyzeClass = false;
 
     private String packageName;
@@ -65,16 +65,20 @@ public class ClassMeta implements ModifierEntity, DescriptionEntity {
             }
         }
 
-        for (String str : extents) {
-            if (!str.contains(".") && !JavaConstants.isBaseType(str)) {
-                finishedAnalyzeClass = false;
-                return;
+        if (extents != null) {
+            for (String str : extents) {
+                if (!str.contains(".") && !JavaConstants.isBaseType(str)) {
+                    finishedAnalyzeClass = false;
+                    return;
+                }
             }
         }
-        for (String str : interfaces) {
-            if (!str.contains(".") && !JavaConstants.isBaseType(str)) {
-                finishedAnalyzeClass = false;
-                return;
+        if (interfaces != null) {
+            for (String str : interfaces) {
+                if (!str.contains(".") && !JavaConstants.isBaseType(str)) {
+                    finishedAnalyzeClass = false;
+                    return;
+                }
             }
         }
         if (methods != null) {
@@ -95,6 +99,7 @@ public class ClassMeta implements ModifierEntity, DescriptionEntity {
     }
 
     private void analyzeClassName(List<String> list, Function<String, String> transform) {
+        if (list == null) return;
         int size = list.size();
         for (int i = 0; i < size; i++) {
             String old = list.get(i);
@@ -110,16 +115,8 @@ public class ClassMeta implements ModifierEntity, DescriptionEntity {
         if (!"java.lang.Object".equals(className)) {
             list.add("java.lang.Object");
         }
-        list.addAll(extents);
-        list.addAll(interfaces);
+        if (extents != null) list.addAll(extents);
+        if (interfaces != null) list.addAll(interfaces);
         return list;
-    }
-
-    public String getSimpleName() {
-        if (className.contains(".")) {
-            int idx = className.lastIndexOf('.');
-            return className.substring(idx + 1);
-        }
-        return className;
     }
 }
