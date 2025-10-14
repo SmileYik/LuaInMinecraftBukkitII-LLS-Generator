@@ -98,14 +98,14 @@ public class LuaStubGenerator {
                 paramDes.put(param.getName(), param);
             }
             for (Param param : params) {
-                paramNames.add(param.getName());
+                paramNames.add(param.isVarArgs() ? "..." : param.getName());
                 DescriptionTag descriptionTag = paramDes.get(param.getName());
                 if (descriptionTag == null) continue;
                 String desc = descriptionTag.getContent();
                 if (desc == null) continue;
                 desc = desc.replaceAll("[\n\r]", "").trim();
                 if (desc.isEmpty()) continue;
-                lines.add("---@param " + param.getName() + " " + getType(param.getType()) + " " + desc);
+                lines.add("---@param " + (param.isVarArgs() ? "..." : param.getName()) + " " + getType(param.getType()) + (param.isVarArgs() ? "|" + getType(param.getType()) + "[]" : "") + " " + desc);
             }
             if (methodMeta.hasReturn()) {
                 lines.add("---@return " + getType(methodMeta.getReturnType()) + " " + methodMeta.getReturnDescription());
@@ -139,18 +139,18 @@ public class LuaStubGenerator {
         return any;
     }
 
-    protected static String overrideMethodLine(MethodMeta methodMeta) {
-        return "---@overload fun(" +
-                String.join(", ", paramsToString(methodMeta.getParams())) +
-                "): " +
-                getType(methodMeta.getReturnType());
-    }
-
-    protected static List<String> paramsToString(List<Param> list) {
-        List<String> strings = new ArrayList<>();
-        for (Param param : list) {
-            strings.add(String.format("%s: %s", param.getName(), getType(param.getType())));
-        }
-        return strings;
-    }
+//    protected static String overrideMethodLine(MethodMeta methodMeta) {
+//        return "---@overload fun(" +
+//                String.join(", ", paramsToString(methodMeta.getParams())) +
+//                "): " +
+//                getType(methodMeta.getReturnType());
+//    }
+//
+//    protected static List<String> paramsToString(List<Param> list) {
+//        List<String> strings = new ArrayList<>();
+//        for (Param param : list) {
+//            strings.add(String.format("%s: %s", param.getName(), getType(param)));
+//        }
+//        return strings;
+//    }
 }

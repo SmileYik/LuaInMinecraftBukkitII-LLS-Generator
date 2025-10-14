@@ -13,8 +13,4 @@ public class Param {
     public String getName() {
         return LuaConstants.getName(name);
     }
-
-    public String getType() {
-        return varArgs ? type + "[]" : type;
-    }
 }
