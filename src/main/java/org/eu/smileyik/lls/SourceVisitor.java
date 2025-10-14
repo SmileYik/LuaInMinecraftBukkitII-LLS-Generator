@@ -236,7 +236,12 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
         List<String> result = new ArrayList<>();
         for (ClassOrInterfaceType type : list) {
             String name = type.getNameAsString();
-            result.add(getFullClassName(name));
+            Optional<ClassOrInterfaceType> scope = type.getScope();
+            if (scope.isPresent()) {
+                result.add(scope.get() + "." + name);
+            } else {
+                result.add(getFullClassName(name));
+            }
         }
         return result;
     }
