@@ -125,7 +125,14 @@ public class LuaStubGenerator {
         String any = TYPES.get(type);
         if (any == null) {
             if (type.endsWith("[]")) {
-                return "table";
+                int i = type.indexOf("[");
+                String t = type.substring(0, i);
+                String tail = type.substring(i);
+                t = getType(t);
+                if ("any".equals(t)) {
+                    return "any";
+                }
+                return t + tail;
             }
             return type;
         }

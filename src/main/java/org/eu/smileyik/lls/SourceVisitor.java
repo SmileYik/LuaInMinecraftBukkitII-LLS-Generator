@@ -203,6 +203,12 @@ public class SourceVisitor extends VoidVisitorAdapter<Void> {
     }
 
     protected String getFullClassName(String name) {
+        if (name.endsWith("[]")) {
+            int i = name.lastIndexOf('[');
+            String field = name.substring(0, i);
+            field = getFullClassName(field);
+            return field + name.substring(i);
+        }
         if (JavaConstants.isBaseType(name)) {
             return name;
         }
