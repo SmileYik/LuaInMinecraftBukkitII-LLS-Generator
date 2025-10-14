@@ -21,14 +21,17 @@ import java.util.zip.ZipFile;
 
 public class SourceGenerator {
     private static final JavaParser PARSER = new JavaParser(new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21));
+
+    public static interface Splitter extends Function<ClassMeta, String> {}
+
     public static void generate(@NotNull Path sourcePath,
                                 @NotNull Path outputDir,
-                                @NotNull Function<ClassMeta, Boolean> filter) throws IOException {
+                                @NotNull Splitter splitter) throws IOException {
         try (Stream<Path> list = Files.list(sourcePath)) {
             list.forEach(it -> {
                 if (Files.isDirectory(it)) {
                     try {
-                        generate(it, outputDir, filter);
+                        generate(it, outputDir, splitter);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -39,9 +42,14 @@ public class SourceGenerator {
                             cu.accept(sourceVisitor, null);
                             Collection<ClassMeta> classMetas = sourceVisitor.getClassMetas();
                             for (ClassMeta classMeta : classMetas) {
-                                if (filter.apply(classMeta)) {
+                                String result = splitter.apply(classMeta);
+                                if (result != null) {
+                                    Path out = outputDir.resolve(result);
                                     try {
-                                        writeToFile(classMeta, outputDir);
+                                        if (!Files.exists(out)) {
+                                            Files.createDirectories(out);
+                                        }
+                                        writeToFile(classMeta, out);
                                     } catch (IOException e) {
                                         throw new RuntimeException(e);
                                     }
@@ -58,7 +66,7 @@ public class SourceGenerator {
 
     public static void generate(@NotNull ZipFile zipFile,
                                 @NotNull Path outputDir,
-                                @NotNull Function<ClassMeta, Boolean> filter) throws IOException {
+                                @NotNull Splitter splitter) throws IOException {
         try {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
@@ -72,9 +80,14 @@ public class SourceGenerator {
                         cu.accept(sourceVisitor, null);
                         Collection<ClassMeta> classMetas = sourceVisitor.getClassMetas();
                         for (ClassMeta classMeta : classMetas) {
-                            if (filter.apply(classMeta)) {
+                            String result = splitter.apply(classMeta);
+                            if (result != null) {
+                                Path out = outputDir.resolve(result);
                                 try {
-                                    writeToFile(classMeta, outputDir);
+                                    if (!Files.exists(out)) {
+                                        Files.createDirectories(out);
+                                    }
+                                    writeToFile(classMeta, out);
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
