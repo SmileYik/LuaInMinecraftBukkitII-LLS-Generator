@@ -2,18 +2,19 @@ package org.eu.smileyik.maven;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eu.smileyik.lls.SourceGenerator;
 import org.eu.smileyik.maven.entity.Dependency;
 import org.eu.smileyik.maven.entity.DependencyManagement;
 import org.eu.smileyik.maven.entity.Metadata;
 import org.eu.smileyik.maven.entity.Project;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+import java.util.zip.ZipFile;
 
 public class Maven {
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -41,6 +42,9 @@ public class Maven {
         this.metadata = findMetadata(modelInfo);
         this.project = findProject(modelInfo, this.metadata);
 
+        List<Metadata> sources = new ArrayList<>();
+        List<Metadata> classes = new ArrayList<>();
+
         List<ModelInfo> dependencies = getDependencies(modelInfo, this.project)
                 .parallelStream()
                 .filter(it -> {
@@ -60,6 +64,59 @@ public class Maven {
                     return false;
                 })
                 .collect(Collectors.toList());
+        Set<Info> collect = dependencies.stream()
+                .map(modelInfo -> {
+                    Metadata meta = findMetadata(modelInfo);
+                    Metadata.SnapshotVersion target = meta.getVersioning()
+                            .getSnapshotVersions()
+                            .stream()
+                            .filter(Metadata.SnapshotVersion::isSourceJar)
+                            .findFirst()
+                            .orElse(meta.getVersioning()
+                                    .getSnapshotVersions()
+                                    .stream()
+                                    .filter(Metadata.SnapshotVersion::isMainJar)
+                                    .findFirst()
+                                    .orElse(null));
+                    if (target == null) return null;
+                    Path filePath = find(repo -> {
+                        String path = modelInfo.getUrl(target);
+                        Path p = Paths.get(path);
+                        try {
+                            String url = repo + path;
+                            Path parent = p.getParent();
+                            if (!Files.exists(parent)) {
+                                Files.createDirectories(parent);
+                            }
+                            Downloader.download(url, 8192, 60, p.toFile());
+                        } catch (Exception e) {
+                            return null;
+                        }
+                        return p;
+                    });
+                    Info info = new Info();
+                    info.path = filePath;
+                    info.source = target.isSourceJar();
+                    return info;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        for (Info info : collect) {
+            if (info.source) {
+                try {
+                    SourceGenerator.generate(new ZipFile(info.path.toFile()), outPath, (a, b) -> {
+                        return "out";
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static final class Info {
+        private boolean source;
+        private Path path;
     }
 
     public static interface Callback<T> {
