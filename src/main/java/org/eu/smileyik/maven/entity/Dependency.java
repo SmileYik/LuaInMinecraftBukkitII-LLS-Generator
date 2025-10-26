@@ -1,11 +1,13 @@
 package org.eu.smileyik.maven.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.eu.smileyik.maven.ModelInfo;
 
 @Data
 @ToString
+@EqualsAndHashCode(callSuper = true)
 public class Dependency extends ModelInfo {
     private String groupId;
     private String artifactId;
@@ -18,13 +20,5 @@ public class Dependency extends ModelInfo {
                 "/" + getArtifactId() +
                 "/" + getVersion() +
                 "/" + getArtifactId() + "-" + getVersion() + ".pom";
-    }
-
-    public String toModel() {
-        return groupId + ":" + artifactId + ":" + version;
-    }
-
-    public boolean matches(String pattern) {
-        return toModel().matches(pattern);
     }
 }

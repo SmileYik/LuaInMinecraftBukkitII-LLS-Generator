@@ -1,9 +1,13 @@
 package org.eu.smileyik.maven;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.eu.smileyik.maven.entity.Metadata;
 
 @Getter
+@ToString
+@EqualsAndHashCode
 public class ModelInfo {
     private String groupId;
     private String artifactId;
@@ -31,13 +35,21 @@ public class ModelInfo {
     }
 
     public String getModelPath() {
-        return groupId.replace('.', '/') + "/" + artifactId + "/" + version + "/";
+        return getGroupId().replace('.', '/') + "/" + getArtifactId() + "/" + getVersion() + "/";
     }
 
     public String getUrl(Metadata.SnapshotVersion snapshotVersion) {
         String classifier = snapshotVersion.getClassifier();
         String extension = snapshotVersion.getExtension();
         String value = snapshotVersion.getValue();
-        return getModelPath() + artifactId + "-" + value + (classifier == null ? "" : "-" + classifier) + "." + extension;
+        return getModelPath() + getArtifactId() + "-" + value + (classifier == null ? "" : "-" + classifier) + "." + extension;
+    }
+
+    public String toModel() {
+        return getGroupId() + ":" + getArtifactId() + ":" + getVersion();
+    }
+
+    public boolean matches(String pattern) {
+        return toModel().matches(pattern);
     }
 }

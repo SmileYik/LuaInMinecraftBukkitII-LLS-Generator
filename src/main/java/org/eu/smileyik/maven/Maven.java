@@ -2,6 +2,8 @@ package org.eu.smileyik.maven;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import lombok.Setter;
 import org.eu.smileyik.lls.SourceGenerator;
 import org.eu.smileyik.maven.entity.Dependency;
 import org.eu.smileyik.maven.entity.DependencyManagement;
@@ -17,7 +19,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 
 public class Maven {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new XmlMapper();
 
     static {
         MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -25,7 +27,9 @@ public class Maven {
 
     private List<String> repositories = new ArrayList<>();
     private LinkedList<String> currentRepos = new LinkedList<>();
+    @Setter
     private List<String> excludes = new ArrayList<>();
+    @Setter
     private List<String> includes = new ArrayList<>();
 
     private final ModelInfo modelInfo;
@@ -45,8 +49,10 @@ public class Maven {
         List<Metadata> sources = new ArrayList<>();
         List<Metadata> classes = new ArrayList<>();
 
+        Set<String> checked = new HashSet<>();
         List<ModelInfo> dependencies = getDependencies(modelInfo, this.project)
-                .parallelStream()
+                .stream()
+                .filter(it -> checked.add(it.toModel()))
                 .filter(it -> {
                     for (String exclude : excludes) {
                         if (it.matches(exclude)) {
@@ -66,7 +72,21 @@ public class Maven {
                 .collect(Collectors.toList());
         Set<Info> collect = dependencies.stream()
                 .map(modelInfo -> {
-                    Metadata meta = findMetadata(modelInfo);
+                    Metadata meta;
+                    try {
+                        meta = findMetadata(modelInfo);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Pass: " + modelInfo);
+                        meta = new Metadata();
+                        Metadata.Versioning versioning = new Metadata.Versioning();
+                        Metadata.SnapshotVersion source = new Metadata.SnapshotVersion();
+                        source.setExtension("jar");
+                        source.setClassifier("sources");
+                        source.setValue(modelInfo.getVersion());
+                        versioning.setSnapshotVersions(Arrays.asList(source));
+                        meta.setVersioning(versioning);
+                    }
                     Metadata.SnapshotVersion target = meta.getVersioning()
                             .getSnapshotVersions()
                             .stream()
@@ -82,12 +102,14 @@ public class Maven {
                     Path filePath = find(repo -> {
                         String path = modelInfo.getUrl(target);
                         Path p = Paths.get(path);
+                        p = Paths.get("jars", p.toString());
                         try {
                             String url = repo + path;
                             Path parent = p.getParent();
                             if (!Files.exists(parent)) {
                                 Files.createDirectories(parent);
                             }
+                            System.out.println(url);
                             Downloader.download(url, 8192, 60, p.toFile());
                         } catch (Exception e) {
                             return null;
@@ -97,15 +119,16 @@ public class Maven {
                     Info info = new Info();
                     info.path = filePath;
                     info.source = target.isSourceJar();
+                    info.modelInfo = modelInfo;
                     return info;
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         for (Info info : collect) {
-            if (info.source) {
+            if (info.source && info.path != null) {
                 try {
                     SourceGenerator.generate(new ZipFile(info.path.toFile()), outPath, (a, b) -> {
-                        return "out";
+                        return info.modelInfo.getArtifactId();
                     });
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -117,6 +140,7 @@ public class Maven {
     private static final class Info {
         private boolean source;
         private Path path;
+        private ModelInfo modelInfo;
     }
 
     public static interface Callback<T> {
@@ -132,7 +156,7 @@ public class Maven {
                     return result;
                 }
             } catch (Exception ignore) {
-
+                ignore.printStackTrace();
             }
         }
         return null;
@@ -163,6 +187,7 @@ public class Maven {
     }
 
     private Metadata findMetadata(ModelInfo modelInfo) {
+        System.out.println(modelInfo);
         Metadata metadata = find(repo -> {
             String url = repo + modelInfo.getMavenMetadataPath();
             byte[] bytes = Downloader.download(url, 8196, 60);
@@ -177,12 +202,20 @@ public class Maven {
         this.currentRepos.addFirst(repo);
     }
 
-    public List<Dependency> getDependencies(ModelInfo modelInfo, Project project) {
-        List<Dependency> dependencies = new ArrayList<>();
+    private final Set<String> checked = new HashSet<>();
+    public List<ModelInfo> getDependencies(ModelInfo modelInfo, Project project) {
+        List<ModelInfo> dependencies = new ArrayList<>();
         if (project.getDependencies() != null) {
+            for (Dependency dependency : project.getDependencies()) {
+                if (dependency.getVersion() == null) {
+                    dependency.setVersion(modelInfo.getVersion());
+                }
+            }
             dependencies.addAll(project.getDependencies());
         }
+        dependencies.add(modelInfo);
         DependencyManagement dependencyManagement = project.getDependencyManagement();
+
         if (dependencyManagement != null) {
             for (Dependency dependency : dependencyManagement.getDependencies()) {
                 Project requireProject = find(repo -> {
@@ -190,7 +223,7 @@ public class Maven {
                     byte[] bytes = Downloader.download(url, 8196, 60);
                     return MAPPER.readValue(bytes, Project.class);
                 });
-                if (requireProject != null) {
+                if (requireProject != null && checked.add(dependency.toModel())) {
                     String model = dependency.toModel();
                     ModelInfo info = new ModelInfo(model);
                     dependencies.addAll(getDependencies(info, requireProject));
@@ -202,9 +235,22 @@ public class Maven {
 
     public void setRepositories(List<String> repositories) {
         this.repositories.clear();
+        repositories = new ArrayList<>(repositories);
         for (String repository : repositories) {
-            repositories.add(repository.endsWith("/") ? repository : repository + "/");
+            this.repositories.add(repository.endsWith("/") ? repository : repository + "/");
         }
-        this.currentRepos = new LinkedList<>(repositories);
+        this.currentRepos = new LinkedList<>(this.repositories);
+    }
+
+    public static void main(String[] args) {
+        Maven maven = new Maven("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT", Paths.get("F:\\work\\mc\\LuaInMinecraftBukkitII-LLS-Generator\\out"));
+        maven.setRepositories(Arrays.asList("https://repo.papermc.io/repository/maven-public/"));
+        maven.setIncludes(Arrays.asList(
+                "net\\.md\\-5:.+:.+",
+                "net\\.kyori:.+:.+",
+                "io\\.papermc\\.paper:.+:.+"
+        ));
+        maven.init();
+
     }
 }
