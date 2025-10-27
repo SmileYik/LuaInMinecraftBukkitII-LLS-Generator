@@ -3,6 +3,7 @@ package org.eu.smileyik.maven.entity;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,7 +20,31 @@ public class Metadata {
     public static class Versioning {
         private String lastUpdated;
         private Snapshot snapshot;
-        private List<SnapshotVersion> snapshotVersions;
+        private List<SnapshotVersion> snapshotVersions = new ArrayList<>();
+
+        public void addSourceJar(String version) {
+            addVersion("sources", "jar", version);
+        }
+
+        public void addMainJar(String version) {
+            addVersion("", "jar", version);
+        }
+
+        public void addPom(String version) {
+            addVersion("", "pom", version);
+        }
+
+        public void addJavadoc(String version) {
+            addVersion("javadoc", "jar", version);
+        }
+
+        private void addVersion(String classifier, String extension, String version) {
+            SnapshotVersion snapshotVersion = new SnapshotVersion();
+            snapshotVersion.setClassifier(classifier);
+            snapshotVersion.setExtension(extension);
+            snapshotVersion.setValue(version);
+            snapshotVersions.add(snapshotVersion);
+        }
     }
 
     @Data

@@ -2,12 +2,14 @@ package org.eu.smileyik.maven;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.eu.smileyik.maven.entity.Metadata;
 
 @Getter
 @ToString
 @EqualsAndHashCode
+@Setter
 public class ModelInfo {
     private String groupId;
     private String artifactId;
@@ -27,7 +29,8 @@ public class ModelInfo {
         String[] split = model.split(":");
         this.groupId = split[0];
         this.artifactId = split[1];
-        this.version = split[2];
+        boolean isNull = split.length < 3 || split[2].isEmpty() || split[2].equals("null");
+        this.version = isNull ? null : split[2];
     }
 
     public String getMavenMetadataPath() {
@@ -47,6 +50,10 @@ public class ModelInfo {
 
     public String toModel() {
         return getGroupId() + ":" + getArtifactId() + ":" + getVersion();
+    }
+
+    public String toModelNoVersion() {
+        return getGroupId() + ":" + getArtifactId();
     }
 
     public boolean matches(String pattern) {
