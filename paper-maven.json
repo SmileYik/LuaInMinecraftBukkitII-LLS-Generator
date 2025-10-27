@@ -1,7 +1,7 @@
 [
   {
     "model": "io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT",
-    "outputPath": "out",
+    "outputPath": "lua/paper-api",
     "cachePath": "cache",
     "repositories": [
       "https://repo.papermc.io/repository/maven-public/"

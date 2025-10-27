@@ -32,3 +32,19 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+tasks.register('generateByJavaStandardApi', JavaExec) {
+    group = "execution"
+    description = "generate lua file by java standard api source, depends your Java version"
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.eu.smileyik.JavaSourceGenerator'
+    args = ["lua/java-standard-api"]
+}
+
+tasks.register('generateByPaperMaven', JavaExec) {
+    group = "execution"
+    description = "generate lua file by paper maven"
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.eu.smileyik.maven.MavenGenerator'
+    args = ["paper-maven.json"]
+}
