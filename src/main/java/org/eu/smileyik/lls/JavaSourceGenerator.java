@@ -1,6 +1,4 @@
-package org.eu.smileyik;
-
-import org.eu.smileyik.lls.SourceGenerator;
+package org.eu.smileyik.lls;
 
 import java.io.File;
 import java.io.IOException;

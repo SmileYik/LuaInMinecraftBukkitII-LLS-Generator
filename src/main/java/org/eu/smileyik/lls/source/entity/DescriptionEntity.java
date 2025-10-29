@@ -1,6 +1,9 @@
-package org.eu.smileyik.lls.entity;
+package org.eu.smileyik.lls.source.entity;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public interface DescriptionEntity {
     public enum Type {

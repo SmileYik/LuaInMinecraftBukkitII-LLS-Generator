@@ -1,6 +1,9 @@
-package org.eu.smileyik.lls.entity;
+package org.eu.smileyik.lls.source.entity;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public interface ModifierEntity {
 

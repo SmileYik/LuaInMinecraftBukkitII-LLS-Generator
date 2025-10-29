@@ -1,4 +1,4 @@
-package org.eu.smileyik.maven;
+package org.eu.smileyik.lls.maven;
 
 public class HexUtil {
     public static String bytesToHex(byte[] bytes) {

@@ -1,4 +1,4 @@
-package org.eu.smileyik.maven.entity;
+package org.eu.smileyik.lls.maven.entity;
 
 import lombok.Data;
 import lombok.ToString;

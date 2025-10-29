@@ -1,6 +1,6 @@
 package org.eu.smileyik.lls;
 
-import org.eu.smileyik.lls.entity.*;
+import org.eu.smileyik.lls.source.entity.*;
 
 import java.util.*;
 

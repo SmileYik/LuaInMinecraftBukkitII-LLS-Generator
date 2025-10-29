@@ -1,9 +1,8 @@
-package org.eu.smileyik.maven;
+package org.eu.smileyik.lls.maven;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.*;

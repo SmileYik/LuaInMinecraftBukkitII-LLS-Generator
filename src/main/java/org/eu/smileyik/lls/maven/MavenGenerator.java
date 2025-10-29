@@ -1,4 +1,4 @@
-package org.eu.smileyik.maven;
+package org.eu.smileyik.lls.maven;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

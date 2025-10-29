@@ -1,4 +1,4 @@
-package org.eu.smileyik.lls;
+package org.eu.smileyik.lls.source;
 
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
@@ -11,7 +11,8 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.javadoc.JavadocBlockTag;
 import lombok.Getter;
 import lombok.ToString;
-import org.eu.smileyik.lls.entity.*;
+import org.eu.smileyik.lls.JavaConstants;
+import org.eu.smileyik.lls.source.entity.*;
 
 import java.util.*;
 

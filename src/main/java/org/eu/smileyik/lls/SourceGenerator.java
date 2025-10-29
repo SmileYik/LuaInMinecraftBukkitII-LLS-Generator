@@ -3,7 +3,8 @@ package org.eu.smileyik.lls;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.quality.NotNull;
-import org.eu.smileyik.lls.entity.ClassMeta;
+import org.eu.smileyik.lls.source.SourceVisitor;
+import org.eu.smileyik.lls.source.entity.ClassMeta;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +16,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;

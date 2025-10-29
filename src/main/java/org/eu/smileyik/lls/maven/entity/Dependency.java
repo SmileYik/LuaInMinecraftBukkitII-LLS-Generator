@@ -1,9 +1,9 @@
-package org.eu.smileyik.maven.entity;
+package org.eu.smileyik.lls.maven.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.eu.smileyik.maven.ModelInfo;
+import org.eu.smileyik.lls.maven.ModelInfo;
 
 @Data
 @ToString

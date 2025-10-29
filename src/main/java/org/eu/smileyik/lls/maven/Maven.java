@@ -1,14 +1,14 @@
-package org.eu.smileyik.maven;
+package org.eu.smileyik.lls.maven;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.Setter;
 import org.eu.smileyik.lls.SourceGenerator;
-import org.eu.smileyik.maven.entity.Dependency;
-import org.eu.smileyik.maven.entity.DependencyManagement;
-import org.eu.smileyik.maven.entity.Metadata;
-import org.eu.smileyik.maven.entity.Project;
+import org.eu.smileyik.lls.maven.entity.Dependency;
+import org.eu.smileyik.lls.maven.entity.DependencyManagement;
+import org.eu.smileyik.lls.maven.entity.Metadata;
+import org.eu.smileyik.lls.maven.entity.Project;
 
 import java.io.IOException;
 import java.nio.file.Files;

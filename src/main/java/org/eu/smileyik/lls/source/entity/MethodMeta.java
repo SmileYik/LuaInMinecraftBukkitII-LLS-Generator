@@ -1,4 +1,4 @@
-package org.eu.smileyik.lls.entity;
+package org.eu.smileyik.lls.source.entity;
 
 import lombok.Data;
 

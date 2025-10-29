@@ -1,4 +1,4 @@
-package org.eu.smileyik.maven;
+package org.eu.smileyik.lls.maven;
 
 import lombok.Data;
 

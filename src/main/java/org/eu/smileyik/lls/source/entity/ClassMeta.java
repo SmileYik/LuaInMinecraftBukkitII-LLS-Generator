@@ -1,9 +1,11 @@
-package org.eu.smileyik.lls.entity;
+package org.eu.smileyik.lls.source.entity;
 
 import lombok.Data;
 import org.eu.smileyik.lls.JavaConstants;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Data

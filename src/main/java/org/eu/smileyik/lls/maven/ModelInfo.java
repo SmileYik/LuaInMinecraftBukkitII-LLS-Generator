@@ -1,10 +1,10 @@
-package org.eu.smileyik.maven;
+package org.eu.smileyik.lls.maven;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.eu.smileyik.maven.entity.Metadata;
+import org.eu.smileyik.lls.maven.entity.Metadata;
 
 @Getter
 @ToString
