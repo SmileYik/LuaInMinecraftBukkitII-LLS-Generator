@@ -48,3 +48,16 @@ tasks.register('generateByPaperMaven', JavaExec) {
     mainClass = 'org.eu.smileyik.lls.maven.MavenGenerator'
     args = ["paper-maven.json"]
 }
+
+tasks.register('cloneLII', Exec) {
+    commandLine 'git', 'clone', 'https://github.com/SmileYik/LuaInMinecraftBukkitII'
+}
+
+tasks.register('generateByLII', JavaExec) {
+    dependsOn 'cloneLII'
+    group = "execution"
+    description = "generate lua file by LuaInMinecraftBukkitII"
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.eu.smileyik.lls.LIIGenerator'
+    args = ["LuaInMinecraftBukkitII", "lua"]
+}
