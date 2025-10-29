@@ -37,6 +37,13 @@ If you want to generate [LuaLS][Lua Language Server] Lua stub file of [Paper API
 If your java libraries can be access from maven repository and has sources jar file in maven repository,
 then you can configure [paper-maven.json] and [build.gradle].
 
+## TODO
+
+[x] generate Lua stubs from Java source file
+[ ] generate Lua stubs from Java class file
+[ ] generate Lua stubs in runtime by Java reflect
+[ ] generate Lua stubs from Javadoc
+
 [LuaInMinecraftBukkitII]: https://github.com/SmileYik/LuaInMinecraftBukkitII
 [Lua Language Server]: https://luals.github.io/
 [PaperMC]: https://papermc.io/

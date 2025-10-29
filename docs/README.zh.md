@@ -34,6 +34,13 @@ after that, you can find your [LuaLS][Lua Language Server] Lua stub file at fold
 
 如果你的依赖库能够在 maven 仓库中访问, 并且在仓库中含有源代码jar包, 那么你就可以通过编辑 [paper-maven.json] 和 [build.gradle] 来实现生成.
 
+## TODO
+
+[x] 分析 Java 源代码文件以生成 Lua 桩文件
+[ ] 分析 Java 字节码文件以生成 Lua 桩文件
+[ ] 在 Java 程序运行时, 通过 Java 反射生成 Lua 桩文件
+[ ] 分析 Javadoc 以生成 Lua 桩文件
+
 [LuaInMinecraftBukkitII]: https://github.com/SmileYik/LuaInMinecraftBukkitII
 [Lua Language Server]: https://luals.github.io/
 [PaperMC]: https://papermc.io/
