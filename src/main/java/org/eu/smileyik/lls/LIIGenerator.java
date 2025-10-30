@@ -15,7 +15,8 @@ public class LIIGenerator {
                 Paths.get(srcPath),
                 Paths.get(outputPath),
                 (path, clazz) -> {
-                    if (clazz.getClassName().startsWith("org.eu.smileyik.luaInMinecraftBukkitII.api.lua")) {
+                    if (clazz.getClassName().startsWith("org.eu.smileyik.luaInMinecraftBukkitII.api.lua") ||
+                            clazz.getClassName().startsWith("org.eu.smileyik.luaInMinecraftBukkitII.scheduler")) {
                         return "LII-api";
                     }
                     return null;
