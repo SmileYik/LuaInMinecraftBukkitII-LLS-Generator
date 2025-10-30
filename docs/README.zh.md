@@ -12,6 +12,11 @@
 * 确保你在一开始就安装了JDK!
 * 记得克隆这个仓库!
 
+### 从 Action 中获取
+
+你可以在 [Action] 中获取预先生成好的 Lua 桩文件.
+若生成的桩文件版本不符合需求, 可以自行克隆本仓库修改相关配置文件, 之后在自己克隆后的仓库中找到自动生成的桩文件.
+
 ### 生成Java标准库API桩文件
 
 如果你想为 [LuaLS][Lua Language Server] 生成Java标准库API的桩文件的话, 仅需要执行以下代码:
@@ -36,11 +41,12 @@ after that, you can find your [LuaLS][Lua Language Server] Lua stub file at fold
 
 ## TODO
 
-[x] 分析 Java 源代码文件以生成 Lua 桩文件
-[ ] 分析 Java 字节码文件以生成 Lua 桩文件
-[ ] 在 Java 程序运行时, 通过 Java 反射生成 Lua 桩文件
-[ ] 分析 Javadoc 以生成 Lua 桩文件
+[x] 分析 Java 源代码文件以生成 Lua 桩文件  
+[ ] 分析 Java 字节码文件以生成 Lua 桩文件  
+[ ] 在 Java 程序运行时, 通过 Java 反射生成 Lua 桩文件  
+[ ] 分析 Javadoc 以生成 Lua 桩文件  
 
+[Action]: https://github.com/SmileYik/LuaInMinecraftBukkitII-LLS-Generator/actions
 [LuaInMinecraftBukkitII]: https://github.com/SmileYik/LuaInMinecraftBukkitII
 [Lua Language Server]: https://luals.github.io/
 [PaperMC]: https://papermc.io/
